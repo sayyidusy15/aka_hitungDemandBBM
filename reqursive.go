@@ -2,6 +2,7 @@ package main
 
 import (
     "fmt"
+    "runtime"
     "time"
 )
 
@@ -36,6 +37,30 @@ func quickSortRecursive(data []RegionDemand) []RegionDemand {
     right = quickSortRecursive(right)
 
     return append(append(left, middle...), right...)
+}
+
+func printMemoryUsage() {
+    var m runtime.MemStats
+    runtime.ReadMemStats(&m)
+    fmt.Printf("Memory Usage: %v KB\n", m.Alloc/1024)
+}
+
+func measurePerformance(data []RegionDemand) {
+    // Mengukur waktu eksekusi
+    startTime := time.Now()
+
+    printMemoryUsage() // Cetak penggunaan memori sebelum pengurutan
+
+    // Pengurutan
+    quickSortRecursive(data)
+
+    duration := time.Since(startTime)
+
+    printMemoryUsage() // Cetak penggunaan memori setelah pengurutan
+
+    // Output hasil
+    fmt.Printf("Data length: %d\n", len(data))
+    fmt.Printf("Execution Time: %s\n", duration)
 }
 
 func main() {
@@ -95,27 +120,23 @@ func main() {
         {"Cilegon Kota", 950},
         {"Cilegon Merak", 1000},
     }
-    
-        numIterations := 10 // Number of times to duplicate the array
-        for i := 0; i < numIterations; i++ {
-            data = append(data, data...) // Append all current elements to the array
+
+    inputSizes := []int{1000, 10000, 50000, 100000, 1000000} // Variasi ukuran input
+
+    for _, targetLength := range inputSizes {
+        fmt.Printf("\nTarget Length: %d\n", targetLength)
+
+        // Membuat data baru sesuai target length
+        initialData := data
+        for len(initialData) < targetLength {
+            remaining := targetLength - len(initialData)
+            if remaining >= len(data) {
+                initialData = append(initialData, data...)
+            } else {
+                initialData = append(initialData, data[:remaining]...)
+            }
         }
-    
 
-        // Mengukur waktu eksekusi
-        startTime := time.Now()
-
-        // Pengurutan
-        // sortedData := quickSortRecursive(data)
-        quickSortRecursive(data)
-    
-        duration := time.Since(startTime)
-    
-        // Output hasil
-        // for _, region := range sortedData {
-        //     fmt.Printf("Region: %s, Demand: %d\n", region.Region, region.Demand)
-        // }
-    
-        fmt.Printf("Data length: %d\n", len(data))
-        fmt.Printf("Execution Time: %s\n", duration)
+        measurePerformance(initialData)
+    }
 }
